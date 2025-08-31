@@ -1,64 +1,81 @@
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-import os, json
+import requests
+from bs4 import BeautifulSoup
+import json, asyncio
+from bot import notify_new_video, SOUND_URLS, HISTORY_FILE, bot
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-SOUNDS_FILE = "sounds.json"
-HISTORY_FILE = "seen_videos.json"
+CHECK_INTERVAL = int(os.getenv("CHECK_INTERVAL", 300))
 
-# Загрузка данных
-try:
-    with open(SOUNDS_FILE, "r") as f:
-        SOUND_URLS = json.load(f)
-except (FileNotFoundError, json.JSONDecodeError):
-    SOUND_URLS = []
-
+# Загрузка истории
 try:
     with open(HISTORY_FILE, "r") as f:
         seen_videos = json.load(f)
-except (FileNotFoundError, json.JSONDecodeError):
+except:
     seen_videos = {}
 
-# Главная страница со списком звуков
+# Главная страница
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    return templates.TemplateResponse(
-        "index.html",
-        {"request": request, "sounds": SOUND_URLS}
-    )
+    return templates.TemplateResponse("index.html", {"request": request, "sounds": SOUND_URLS})
 
-# Форма добавления звука
+# Добавление звука
 @app.get("/add_sound", response_class=HTMLResponse)
 async def add_sound_form(request: Request):
     return templates.TemplateResponse("add_sound.html", {"request": request})
 
-# Обработка добавления звука
 @app.post("/add_sound")
 async def add_sound_submit(url: str = Form(...), name: str = Form(None)):
     SOUND_URLS.append({"url": url, "name": name})
-    with open(SOUNDS_FILE, "w") as f:
+    with open("sounds.json", "w") as f:
         json.dump(SOUND_URLS, f)
     return RedirectResponse("/", status_code=303)
 
-# Просмотр последних 5 видео для конкретного звука
+# Последние 5 видео
 @app.get("/last_videos/{sound_index}", response_class=HTMLResponse)
-async def last_videos_for_sound(request: Request, sound_index: int):
+async def last_videos(request: Request, sound_index: int):
     if sound_index < 0 or sound_index >= len(SOUND_URLS):
         return HTMLResponse("❌ Звук не найден", status_code=404)
 
     sound = SOUND_URLS[sound_index]
-    url = sound.get("url")
-    vids = seen_videos.get(url, [])
+    vids = seen_videos.get(sound['url'], [])
     last5 = vids[-5:] if isinstance(vids, list) else []
 
-    return templates.TemplateResponse(
-        "last_videos.html",
-        {
-            "request": request,
-            "sound_name": sound.get("name") or url,
-            "videos": last5[::-1]  # последние видео сверху
-        }
-    )
+    return templates.TemplateResponse("last_videos.html", {
+        "request": request,
+        "sound_name": sound.get("name") or sound['url'],
+        "videos": last5[::-1]
+    })
+
+# === Парсер TikTok и уведомления в боте ===
+async def check_new_videos():
+    while True:
+        for idx, sound in enumerate(SOUND_URLS):
+            url = sound['url']
+            name = sound.get('name') or f"#{idx+1}"
+            try:
+                r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
+                soup = BeautifulSoup(r.text, "html.parser")
+                video_links = [a['href'] for a in soup.find_all("a", href=True) if "/video/" in a['href']]
+
+                if url not in seen_videos:
+                    seen_videos[url] = []
+
+                for vlink in video_links:
+                    if vlink not in seen_videos[url]:
+                        seen_videos[url].append(vlink)
+                        with open(HISTORY_FILE, "w") as f:
+                            json.dump(seen_videos, f)
+                        await notify_new_video(name, vlink)
+
+            except Exception as e:
+                print("Ошибка при парсинге:", e)
+        await asyncio.sleep(CHECK_INTERVAL)
+
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(check_new_videos())
