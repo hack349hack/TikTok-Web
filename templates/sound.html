@@ -1,17 +1,27 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
+    <meta charset="UTF-8">
     <title>{{ sound.name or "Без имени" }}</title>
-    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <h1>{{ sound.name or "Без имени" }}</h1>
-    <p>Ссылка: <a href="{{ sound.url }}">{{ sound.url }}</a></p>
-    <h2>Последние 5 видео</h2>
-    <ul>
-        {% for v in latest_videos %}
-        <li><a href="{{ v }}">{{ v }}</a></li>
+    <p>Ссылка: <a href="{{ sound.url }}" target="_blank">{{ sound.url }}</a></p>
+
+    <h2>Последние 5 видео под этот звук:</h2>
+    {% if last_videos %}
+        <ul>
+        {% for video in last_videos %}
+            <li>
+                <a href="{{ video }}" target="_blank">{{ video }}</a>
+            </li>
         {% endfor %}
-    </ul>
+        </ul>
+    {% else %}
+        <p>❌ Видео пока нет</p>
+    {% endif %}
+
+    <p><a href="/add_sound">➕ Добавить звук</a></p>
+    <p><a href="/">🔙 Назад к списку</a></p>
 </body>
 </html>
