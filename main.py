@@ -44,4 +44,21 @@ async def add_sound_submit(url: str = Form(...), name: str = Form(None)):
     return RedirectResponse("/", status_code=303)
 
 # Просмотр последних 5 видео для конкретного звука
-@app
+@app.get("/last_videos/{sound_index}", response_class=HTMLResponse)
+async def last_videos_for_sound(request: Request, sound_index: int):
+    if sound_index < 0 or sound_index >= len(SOUND_URLS):
+        return HTMLResponse("❌ Звук не найден", status_code=404)
+
+    sound = SOUND_URLS[sound_index]
+    url = sound.get("url")
+    vids = seen_videos.get(url, [])
+    last5 = vids[-5:] if isinstance(vids, list) else []
+
+    return templates.TemplateResponse(
+        "last_videos.html",
+        {
+            "request": request,
+            "sound_name": sound.get("name") or url,
+            "videos": last5[::-1]  # последние видео сверху
+        }
+    )
