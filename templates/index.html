@@ -1,17 +1,24 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Звуки TikTok</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <meta charset="UTF-8">
+    <title>Список звуков</title>
 </head>
 <body>
-    <h1>Все звуки</h1>
-    <ul>
-        {% for idx, sound in enumerate(sounds) %}
-        <li>
-            <a href="/sound/{{ idx }}">{{ sound.name or "Без имени" }}</a> — {{ sound.url }}
-        </li>
+    <h1>📃 Список звуков</h1>
+
+    {% if sounds %}
+        <ul>
+        {% for sound in sounds %}
+            <li>
+                {{ loop.index }}. {{ sound.name or "Без имени" }} — <a href="{{ sound.url }}" target="_blank">Ссылка</a>
+            </li>
         {% endfor %}
-    </ul>
+        </ul>
+    {% else %}
+        <p>❌ Звуков пока нет</p>
+    {% endif %}
+
+    <p><a href="/add_sound">➕ Добавить звук</a></p>
 </body>
 </html>
