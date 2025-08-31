@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Form
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 import os, json
 
@@ -22,10 +22,13 @@ try:
 except (FileNotFoundError, json.JSONDecodeError):
     seen_videos = {}
 
-# Главная страница
+# Главная страница со списком звуков
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request, "sounds": SOUND_URLS})
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request, "sounds": SOUND_URLS}
+    )
 
 # Форма добавления звука
 @app.get("/add_sound", response_class=HTMLResponse)
@@ -38,16 +41,7 @@ async def add_sound_submit(url: str = Form(...), name: str = Form(None)):
     SOUND_URLS.append({"url": url, "name": name})
     with open(SOUNDS_FILE, "w") as f:
         json.dump(SOUND_URLS, f)
-    return {"status": "ok"}
+    return RedirectResponse("/", status_code=303)
 
-# Просмотр последних видео (демо)
-@app.get("/last_videos", response_class=HTMLResponse)
-async def last_videos(request: Request):
-    # Пример: берем последние 5 видео из seen_videos
-    videos = []
-    for sound in SOUND_URLS:
-        url = sound["url"]
-        vids = seen_videos.get(url, [])[-5:]
-        for v in vids:
-            videos.append({"url": v})
-    return templates.TemplateResponse("last_videos.html", {"request": request, "videos": videos})
+# Просмотр последних 5 видео для конкретного звука
+@app
