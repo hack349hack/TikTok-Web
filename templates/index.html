@@ -1,19 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <title>Список звуков</title>
+    <title>Звуки TikTok</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<h1>Список звуков</h1>
-<ul>
-{% for i, sound in enumerate(sounds) %}
-    <li>
-        {{ sound.name or sound.url }} —
-        <a href="{{ url_for('last_videos_for_sound', sound_index=i) }}">Последние 5 видео</a>
-    </li>
-{% endfor %}
-</ul>
-<a href="/add_sound">Добавить звук</a>
+    <h1>Все звуки</h1>
+    <ul>
+        {% for idx, sound in enumerate(sounds) %}
+        <li>
+            <a href="/sound/{{ idx }}">{{ sound.name or "Без имени" }}</a> — {{ sound.url }}
+        </li>
+        {% endfor %}
+    </ul>
 </body>
 </html>
