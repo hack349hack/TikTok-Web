@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Звуки TikTok</title>
+</head>
+<body>
+<h1>Список звуков</h1>
+
+{% if message %}
+<p><strong>{{ message }}</strong></p>
+{% endif %}
+
+<ul>
+{% for i, sound in enumerate(sounds) %}
+<li>
+  {{ sound.name or 'Без имени' }} — {{ sound.url }}
+  <form style="display:inline" method="post" action="/remove_sound">
+    <input type="hidden" name="index" value="{{ i }}">
+    <button type="submit">🗑 Удалить</button>
+  </form>
+  <a href="/last_videos/{{ i }}"><button>🎬 Последние 5 видео</button></a>
+</li>
+{% endfor %}
+</ul>
+
+<h2>➕ Добавить звук</h2>
+<form method="post" action="/add_sound">
+  <input type="text" name="url" placeholder="Ссылка на звук TikTok" required>
+  <input type="text" name="name" placeholder="Название (необязательно)">
+  <button type="submit">Добавить</button>
+</form>
+</body>
+</html>
