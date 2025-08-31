@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Последние видео</title>
+</head>
+<body>
+<h1>Последние видео под звуком: {{ sound.name or 'Без имени' }}</h1>
+
+<ul>
+{% for video in videos %}
+<li><a href="{{ video }}" target="_blank">{{ video }}</a></li>
+{% endfor %}
+</ul>
+
+<a href="/"><button>⬅️ Назад к списку звуков</button></a>
+</body>
+</html>
