@@ -4,3 +4,4 @@ jinja2
 requests
 beautifulsoup4
 aiofiles
+python-multipart
