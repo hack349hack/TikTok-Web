@@ -10,8 +10,7 @@
     {% if sounds %}
         <ul>
         {% for sound in sounds %}
-            <li>
-                {{ loop.index }}. {{ sound.name or "Без имени" }} — 
+            <li>{{ loop.index }}. {{ sound.name or "Без имени" }} — 
                 <a href="{{ sound.url }}" target="_blank">Ссылка</a>
             </li>
         {% endfor %}
@@ -21,5 +20,7 @@
     {% endif %}
 
     <a href="/add_sound">➕ Добавить звук</a>
+    <br>
+    <a href="/last_videos">🆕 Последние видео</a>
 </body>
 </html>
