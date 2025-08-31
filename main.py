@@ -14,15 +14,23 @@ templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 SOUNDS_FILE = "sounds.json"
+HISTORY_FILE = "seen_videos.json"
 
-# Загружаем звуки
-if os.path.exists(SOUNDS_FILE):
+# === Загрузка звуков с защитой ===
+try:
     with open(SOUNDS_FILE, "r") as f:
         SOUND_URLS = json.load(f)
-else:
+except (FileNotFoundError, json.JSONDecodeError):
     SOUND_URLS = []
 
-# Главная страница
+# === Загрузка истории видео с защитой ===
+try:
+    with open(HISTORY_FILE, "r") as f:
+        seen_videos = json.load(f)
+except (FileNotFoundError, json.JSONDecodeError):
+    seen_videos = {}
+
+# === Главная страница ===
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request, message: str = None):
     return templates.TemplateResponse(
@@ -30,7 +38,7 @@ async def index(request: Request, message: str = None):
         {"request": request, "sounds": SOUND_URLS, "message": message}
     )
 
-# Добавление звука
+# === Добавление звука ===
 @app.post("/add_sound")
 async def add_sound(url: str = Form(...), name: str = Form(None)):
     SOUND_URLS.append({"url": url, "name": name})
@@ -38,7 +46,7 @@ async def add_sound(url: str = Form(...), name: str = Form(None)):
         json.dump(SOUND_URLS, f)
     return await index(Request(scope={"type":"http"}), message="✅ Звук добавлен!")
 
-# Удаление звука
+# === Удаление звука ===
 @app.post("/remove_sound")
 async def remove_sound(index: int = Form(...)):
     if 0 <= index < len(SOUND_URLS):
@@ -47,7 +55,7 @@ async def remove_sound(index: int = Form(...)):
             json.dump(SOUND_URLS, f)
     return await index(Request(scope={"type":"http"}), message="🗑 Звук удалён!")
 
-# Получаем последние 5 видео под звуком
+# === Получаем последние 5 видео под звуком ===
 def get_last_videos(sound_url, limit=5):
     videos = []
     try:
@@ -63,7 +71,7 @@ def get_last_videos(sound_url, limit=5):
         pass
     return videos
 
-# Страница с последними 5 видео
+# === Страница с последними видео ===
 @app.get("/last_videos/{index}", response_class=HTMLResponse)
 async def last_videos(request: Request, index: int):
     if 0 <= index < len(SOUND_URLS):
