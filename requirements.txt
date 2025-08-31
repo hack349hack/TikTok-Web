@@ -1,7 +1,7 @@
 fastapi
-uvicorn
+uvicorn[standard]
 jinja2
-requests
-beautifulsoup4
 aiofiles
 python-multipart
+requests
+beautifulsoup4
