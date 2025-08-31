@@ -4,5 +4,5 @@ jinja2
 aiohttp
 requests
 beautifulsoup4
-aiogram==3.0.0b7
+aiogram
 python-multipart
