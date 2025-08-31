@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ sound.name or "Без имени" }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>{{ sound.name or "Без имени" }}</h1>
+    <p>Ссылка: <a href="{{ sound.url }}">{{ sound.url }}</a></p>
+    <h2>Последние 5 видео</h2>
+    <ul>
+        {% for v in latest_videos %}
+        <li><a href="{{ v }}">{{ v }}</a></li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
