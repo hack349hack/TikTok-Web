@@ -1,25 +1,16 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Последние видео под звук</title>
+    <meta charset="utf-8">
+    <title>Последние видео</title>
 </head>
 <body>
-    <h1>🆕 Последние видео</h1>
-
-    {% if videos %}
-        <ul>
-        {% for video in videos %}
-            <li>
-                {{ loop.index }}. 
-                <a href="{{ video.url }}" target="_blank">Открыть в TikTok</a>
-            </li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>❌ Видео пока нет</p>
-    {% endif %}
-
-    <a href="/">⬅️ Назад к списку звуков</a>
+<h1>Последние 5 видео для: {{ sound_name }}</h1>
+<ul>
+{% for v in videos %}
+    <li><a href="{{ v }}" target="_blank">{{ v }}</a></li>
+{% endfor %}
+</ul>
+<a href="/">Назад к списку звуков</a>
 </body>
 </html>
